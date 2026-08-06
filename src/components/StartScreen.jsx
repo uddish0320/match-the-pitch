@@ -25,7 +25,7 @@ const STEPS = [
 const CHIPS = [
   { icon: '🔒', label: '100% in-browser' },
   { icon: '📴', label: 'Works offline' },
-  { icon: '⚡', label: '~20 second rounds' },
+  { icon: '⚡', label: '~40 second rounds' },
 ]
 
 function MicIcon() {
@@ -56,15 +56,15 @@ export default function StartScreen({ micError, onStart }) {
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-        className="relative mb-8"
+        className="relative mb-10"
       >
         <motion.div
-          className="absolute -inset-2 rounded-full bg-[conic-gradient(from_0deg,#8b5cf6,#ec4899,#22d3ee,#8b5cf6)] opacity-70 blur-[6px] will-change-transform"
+          className="absolute -inset-3 rounded-full bg-[conic-gradient(from_0deg,#8b5cf6,#ec4899,#22d3ee,#8b5cf6)] opacity-75 blur-[8px] will-change-transform"
           animate={{ rotate: 360 }}
           transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
         />
-        <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-ink-900 ring-1 ring-white/10">
-          <svg viewBox="0 0 64 64" className="h-12 w-12" aria-hidden>
+        <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-ink-900/90 ring-1 ring-white/15 backdrop-blur">
+          <svg viewBox="0 0 64 64" className="h-14 w-14" aria-hidden>
             <defs>
               <linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#c4b5fd" />
@@ -82,7 +82,7 @@ export default function StartScreen({ micError, onStart }) {
       <motion.h1
         initial={{ y: 16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.08 }}
+        transition={{ delay: 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="font-display text-center text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl"
       >
         Match{' '}
@@ -94,20 +94,20 @@ export default function StartScreen({ micError, onStart }) {
       <motion.p
         initial={{ y: 16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.16 }}
-        className="mt-3 max-w-md text-center text-base text-slate-400"
+        transition={{ delay: 0.16, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="mt-4 max-w-md text-center text-lg leading-relaxed text-slate-400"
       >
-        Hear the note, sing it back, and see how close you can get. Takes about 20 seconds — no experience
+        Hear the note, sing it back, and see how close you can get. Takes about 40 seconds — no experience
         needed.
       </motion.p>
 
-      <div className="mt-9 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mt-10 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
         {STEPS.map((step, i) => (
           <motion.div
             key={step.title}
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.24 + i * 0.1 }}
+            transition={{ delay: 0.24 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           >
             <Card className="flex h-full flex-col items-center gap-3 p-6 text-center">
               <div
@@ -118,7 +118,7 @@ export default function StartScreen({ micError, onStart }) {
               </div>
               <div>
                 <h2 className="font-display text-lg font-bold text-white">{step.title}</h2>
-                <p className="mt-1 text-sm leading-relaxed text-slate-400">{step.text}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{step.text}</p>
               </div>
             </Card>
           </motion.div>
@@ -128,8 +128,8 @@ export default function StartScreen({ micError, onStart }) {
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.55 }}
-        className="mt-10 flex flex-col items-center gap-5"
+        transition={{ delay: 0.55, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="mt-12 flex flex-col items-center gap-5"
       >
         <Button size="lg" onClick={onStart} className="gap-3 px-10">
           <MicIcon /> Start — allow microphone
@@ -139,7 +139,7 @@ export default function StartScreen({ micError, onStart }) {
           {CHIPS.map((chip) => (
             <span
               key={chip.label}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300"
+              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-xs font-medium text-slate-300 backdrop-blur-sm"
             >
               <span aria-hidden>{chip.icon}</span> {chip.label}
             </span>
@@ -152,13 +152,13 @@ export default function StartScreen({ micError, onStart }) {
         </p>
 
         {micError && (
-          <Card className="mt-2 w-full max-w-lg border-rose-400/30 bg-rose-500/10 p-5 text-left">
+          <Card className="mt-3 w-full max-w-lg border-rose-400/30 bg-rose-500/10 p-5 text-left">
             <h3 className="flex items-center gap-2 font-semibold text-rose-200">
               <span aria-hidden>🎙️</span> Microphone problem
             </h3>
             <p className="mt-1 text-sm leading-relaxed text-rose-100/80">{micError}</p>
             <p className="mt-2 text-xs leading-relaxed text-rose-100/60">
-              Tip: check the mic icon in your browser’s address bar, grant permission, and try again.
+              Tip: check the mic icon in your browser's address bar, grant permission, and try again.
             </p>
             <div className="mt-3">
               <Button variant="dark" size="md" onClick={onStart}>

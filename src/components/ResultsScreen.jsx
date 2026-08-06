@@ -7,7 +7,7 @@ import StarRating from './ui/StarRating'
 import { midiToNoteName } from '../lib/musicTheory'
 import { framesToSeconds } from '../lib/scoring'
 
-const RADIUS = 88
+const RADIUS = 92
 const STROKE = 14
 const SIZE = (RADIUS + STROKE) * 2
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
@@ -61,12 +61,12 @@ const HEADLINES = {
 
 function Stat({ label, value, unit }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center">
+    <div className="glass rounded-2xl px-4 py-3.5 text-center">
       <div className="font-display text-2xl font-black tabular-nums text-white">
         {value}
         {unit && <span className="ml-0.5 text-sm font-semibold text-slate-400">{unit}</span>}
       </div>
-      <div className="mt-0.5 text-[11px] font-medium uppercase tracking-widest text-slate-500">{label}</div>
+      <div className="mt-1 text-[11px] font-medium uppercase tracking-widest text-slate-500">{label}</div>
     </div>
   )
 }
@@ -111,8 +111,8 @@ export default function ResultsScreen({ midi, result, onPlayAgain }) {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08 }}
-          className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-slate-300"
+          transition={{ delay: 0.08, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-slate-300 backdrop-blur"
         >
           <span aria-hidden>🎵</span> Target — {name}
         </motion.div>
@@ -120,13 +120,13 @@ export default function ResultsScreen({ midi, result, onPlayAgain }) {
         <motion.h2
           initial={{ y: 14, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.15 }}
-          className="font-display mt-4 text-3xl font-black text-white sm:text-4xl"
+          transition={{ delay: 0.15, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="font-display mt-5 text-3xl font-black text-white sm:text-4xl"
         >
           {headline.title}
         </motion.h2>
 
-        <div className="mt-5">
+        <div className="mt-6">
           <StarRating rating={stars} size="h-16 w-16" />
         </div>
 
@@ -149,7 +149,7 @@ export default function ResultsScreen({ midi, result, onPlayAgain }) {
               cy={SIZE / 2}
               r={RADIUS}
               fill="none"
-              stroke="rgba(255,255,255,0.08)"
+              stroke="rgba(255,255,255,0.06)"
               strokeWidth={STROKE}
             />
             <motion.circle
@@ -163,7 +163,7 @@ export default function ResultsScreen({ midi, result, onPlayAgain }) {
               strokeDasharray={CIRCUMFERENCE}
               initial={{ strokeDashoffset: CIRCUMFERENCE }}
               animate={{ strokeDashoffset: CIRCUMFERENCE * (1 - accuracy / 100) }}
-              transition={{ duration: 1.1, ease: 'easeOut', delay: 0.35 }}
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -180,13 +180,13 @@ export default function ResultsScreen({ midi, result, onPlayAgain }) {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mt-5 text-sm text-slate-400"
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="mt-6 text-sm text-slate-400"
         >
           {headline.sub}
         </motion.p>
 
-        <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Closest" value={bestCents == null ? '—' : Math.round(bestCents)} unit="¢" />
           <Stat label="Average" value={avgAbsCents == null ? '—' : Math.round(avgAbsCents)} unit="¢" />
           <Stat label="Singing" value={framesToSeconds(voicedFrames).toFixed(1)} unit="s" />
@@ -196,7 +196,7 @@ export default function ResultsScreen({ midi, result, onPlayAgain }) {
         <motion.div
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.75 }}
+          transition={{ delay: 0.75, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
           className="mt-8 flex flex-col items-center justify-center"
         >
           <Button size="lg" onClick={onPlayAgain} className="w-full sm:w-auto sm:px-12">
