@@ -2,7 +2,7 @@
 
 A polished, real-time musical **note-matching game** for university orientation events.
 
-Students step up to a laptop + microphone, hear a randomly generated target note, sing it back, and get scored in real time on how accurately they matched the pitch. A full round takes **~20 seconds**.
+Students step up to a laptop + microphone, hear a randomly generated target note, sing it back, and get scored in real time on how accurately they matched the pitch. A full round takes **~50 seconds**.
 
 <p align="center">
   <img src="public/favicon.svg" alt="Match the Pitch" width="96" />
@@ -11,8 +11,8 @@ Students step up to a laptop + microphone, hear a randomly generated target note
 ## How it works
 
 1. **Listen** — a random target note (from a singer-friendly pool, C4–E5) is played. Students can replay it as often as they like.
-2. **Countdown** — 3-2-1-Sing! with beeps.
-3. **Sing** — for 10 seconds, the app runs **real-time pitch detection** and shows a live deviation meter (in cents), the note being sung, and a draining timer.
+2. **Countdown** — 5-4-3-2-1-Sing! with beeps.
+3. **Sing** — for 30 seconds, the app runs **real-time pitch detection** and shows a live deviation meter (in cents), the note being sung, and a draining timer.
 4. **Score** — accuracy %, a 0–3 star rating, closest/average deviation, and how long the voice was detected. Then play again.
 
 ### Scoring
@@ -74,7 +74,7 @@ src/
 ├── components/
 │   ├── StartScreen.jsx           # landing + mic permission + error recovery
 │   ├── NoteReveal.jsx            # target note card, staff notation, replay
-│   ├── CountdownOverlay.jsx      # 3-2-1-Sing!
+│   ├── CountdownOverlay.jsx      # 5-4-3-2-1-Sing!
 │   ├── SingPhase.jsx             # singing window (timer, live note)
 │   ├── PitchMeter.jsx            # live cents gauge
 │   ├── ResultsScreen.jsx         # score, stars, stats, confetti
