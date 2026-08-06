@@ -1,0 +1,35 @@
+{
+  "name": "match-the-pitch",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Match the Pitch — a real-time musical note-matching game for university orientation events. Built with React, Vite, Tailwind CSS, Framer Motion and Pitchy.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "keywords": [
+    "pitch",
+    "game",
+    "music",
+    "web-audio",
+    "pitch-detection",
+    "orientation"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "framer-motion": "^13.0.0",
+    "pitchy": "^4.1.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.0.5",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
+  }
+}
