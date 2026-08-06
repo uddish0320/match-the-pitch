@@ -40,6 +40,12 @@ export const GAME = {
   /** Half-width of the pitch meter gauge in cents (± this value). */
   METER_RANGE_CENTS: 100,
 
+  /** Live-meter display smoothing (EMA alpha per frame, 0–1). */
+  METER_SMOOTHING_ALPHA: 0.3,
+
+  /** How long the display holds the last detected pitch after the signal drops (ms). */
+  METER_HOLD_MS: 300,
+
   /** Time-domain window fed to Pitchy (samples). */
   PITCH_BUFFER_SIZE: 2048,
 

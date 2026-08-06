@@ -44,7 +44,9 @@ export default function NoteReveal({ midi, synth, onReady }) {
   return (
     <Screen>
       <Card className="flex w-full max-w-xl flex-col items-center p-8 text-center sm:p-10">
-        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Target note</p>
+        <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
+          <span aria-hidden>🎵</span> Target note
+        </p>
 
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
@@ -52,7 +54,7 @@ export default function NoteReveal({ midi, synth, onReady }) {
           transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.1 }}
           className="mt-3"
         >
-          <div className="bg-gradient-to-r from-brand-300 via-berry-400 to-glow-300 bg-clip-text font-display text-8xl font-black text-transparent drop-shadow-[0_0_30px_rgba(139,92,246,0.45)]">
+          <div className="bg-gradient-to-r from-brand-300 via-berry-400 to-glow-300 bg-clip-text font-display text-8xl font-black text-transparent drop-shadow-[0_0_30px_rgba(139,92,246,0.45)] sm:text-9xl">
             {name}
           </div>
         </motion.div>
@@ -63,7 +65,7 @@ export default function NoteReveal({ midi, synth, onReady }) {
           transition={{ delay: 0.25 }}
           className="mt-4 w-full"
         >
-          <StaffNote midi={midi} color="#c4b5fd" className="mx-auto" />
+          <StaffNote midi={midi} color="#c4b5fd" className="mx-auto [&_svg]:max-w-[240px] sm:[&_svg]:max-w-[280px]" />
         </motion.div>
 
         <motion.div

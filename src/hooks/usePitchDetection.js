@@ -7,6 +7,12 @@
  *
  * Pitchy is the detection engine — this hook only wires browser audio
  * into it and streams the results out.
+ *
+ * Reliability notes:
+ * - The AudioContext is created once and reused across rounds (starting the
+ *   mic again is much faster than rebuilding the whole context).
+ * - start() is guarded against double-invocation (double-click / key repeat)
+ *   and against races with stop() while the mic permission prompt is open.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -60,30 +66,38 @@ export function usePitchDetection(onSample) {
   }, [onSample])
 
   const engineRef = useRef({
-    rafId: null,
     ctx: null,
+    rafId: null,
     stream: null,
+    source: null,
     analyser: null,
     detector: null,
     input: null,
     running: false,
+    aborted: false,
+    startPromise: null,
   })
 
   const stop = useCallback(() => {
     const engine = engineRef.current
     engine.running = false
+    engine.aborted = true
     if (engine.rafId) {
       cancelAnimationFrame(engine.rafId)
       engine.rafId = null
+    }
+    if (engine.source) {
+      try {
+        engine.source.disconnect()
+      } catch {
+        /* already disconnected */
+      }
+      engine.source = null
     }
     if (engine.stream) {
       engine.stream.getTracks().forEach((track) => track.stop())
       engine.stream = null
     }
-    if (engine.ctx && engine.ctx.state !== 'closed') {
-      engine.ctx.close().catch(() => {})
-    }
-    engine.ctx = null
     engine.analyser = null
     engine.detector = null
     engine.input = null
@@ -94,69 +108,102 @@ export function usePitchDetection(onSample) {
   const start = useCallback(async () => {
     const engine = engineRef.current
     if (engine.running) return true
+    // Guard against rapid double-invocation (double-click / key repeat).
+    if (engine.startPromise) return engine.startPromise
 
-    setError(null)
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('getUserMedia is not available in this browser.')
-      }
+    engine.startPromise = (async () => {
+      engine.aborted = false
+      setError(null)
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error('getUserMedia is not available in this browser.')
+        }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
-        },
-      })
-
-      const Ctx = window.AudioContext || window.webkitAudioContext
-      const ctx = new Ctx()
-      if (ctx.state === 'suspended') await ctx.resume()
-
-      const source = ctx.createMediaStreamSource(stream)
-      const analyser = ctx.createAnalyser()
-      analyser.fftSize = BUFFER_SIZE
-      analyser.smoothingTimeConstant = 0
-      source.connect(analyser)
-
-      const detector = PitchDetector.forFloat32Array(BUFFER_SIZE)
-      detector.minVolumeDecibels = GAME.PITCH_MIN_VOLUME_DB
-      detector.clarityThreshold = GAME.PITCH_CLARITY_THRESHOLD
-
-      const input = new Float32Array(BUFFER_SIZE)
-
-      engine.stream = stream
-      engine.ctx = ctx
-      engine.analyser = analyser
-      engine.detector = detector
-      engine.input = input
-      engine.running = true
-      setIsActive(true)
-
-      const loop = () => {
-        if (!engine.running) return
-        analyser.getFloatTimeDomainData(input)
-        // Pitchy does the pitch detection — we never implement our own.
-        const [pitch, clarity] = detector.findPitch(input, ctx.sampleRate)
-        onSampleRef.current?.({
-          pitch: pitch > 0 ? pitch : null,
-          clarity,
-          rms: computeRms(input),
-          sampleRate: ctx.sampleRate,
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+          },
         })
+        // A stop() may have arrived while the permission prompt was open.
+        if (engine.aborted) {
+          stream.getTracks().forEach((track) => track.stop())
+          return false
+        }
+
+        // Reuse a single AudioContext across rounds for fast restarts.
+        let ctx = engine.ctx
+        if (!ctx || ctx.state === 'closed') {
+          const Ctx = window.AudioContext || window.webkitAudioContext
+          ctx = new Ctx()
+          engine.ctx = ctx
+        }
+        if (ctx.state === 'suspended') await ctx.resume()
+        if (engine.aborted) {
+          stream.getTracks().forEach((track) => track.stop())
+          return false
+        }
+
+        const source = ctx.createMediaStreamSource(stream)
+        const analyser = ctx.createAnalyser()
+        analyser.fftSize = BUFFER_SIZE
+        analyser.smoothingTimeConstant = 0
+        source.connect(analyser)
+
+        const detector = PitchDetector.forFloat32Array(BUFFER_SIZE)
+        detector.minVolumeDecibels = GAME.PITCH_MIN_VOLUME_DB
+        detector.clarityThreshold = GAME.PITCH_CLARITY_THRESHOLD
+
+        const input = new Float32Array(BUFFER_SIZE)
+
+        engine.stream = stream
+        engine.source = source
+        engine.analyser = analyser
+        engine.detector = detector
+        engine.input = input
+        engine.running = true
+        setIsActive(true)
+
+        const loop = () => {
+          if (!engine.running) return
+          analyser.getFloatTimeDomainData(input)
+          // Pitchy does the pitch detection — we never implement our own.
+          const [pitch, clarity] = detector.findPitch(input, ctx.sampleRate)
+          onSampleRef.current?.({
+            pitch: pitch > 0 ? pitch : null,
+            clarity,
+            rms: computeRms(input),
+            sampleRate: ctx.sampleRate,
+          })
+          engine.rafId = requestAnimationFrame(loop)
+        }
         engine.rafId = requestAnimationFrame(loop)
+        return true
+      } catch (err) {
+        setError(mapMicError(err))
+        stop()
+        return false
+      } finally {
+        engine.startPromise = null
       }
-      engine.rafId = requestAnimationFrame(loop)
-      return true
-    } catch (err) {
-      setError(mapMicError(err))
-      stop()
-      return false
-    }
+    })()
+
+    return engine.startPromise
   }, [stop])
 
-  // Full teardown when the hook unmounts.
-  useEffect(() => stop, [stop])
+  // Full teardown when the hook unmounts (also releases the shared context).
+  useEffect(
+    () => () => {
+      stop()
+      const engine = engineRef.current
+      if (engine.ctx && engine.ctx.state !== 'closed') {
+        engine.ctx.close().catch(() => {})
+      }
+      engine.ctx = null
+    },
+    [stop],
+  )
 
   return { start, stop, isActive, error }
 }

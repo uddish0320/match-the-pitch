@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
 import { usePitchDetection } from './hooks/usePitchDetection'
 import { ToneSynthesizer } from './lib/toneSynthesizer'
 import { midiToFrequency, midiToNoteName, closestMidi, centsBetween } from './lib/musicTheory'
@@ -24,17 +24,17 @@ function BackgroundFX() {
     <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,#111b36_0%,#070b14_62%)]" />
       <motion.div
-        className="absolute -left-24 -top-32 h-[28rem] w-[28rem] rounded-full bg-brand-500/25 blur-[110px]"
+        className="absolute -left-24 -top-32 h-[28rem] w-[28rem] rounded-full bg-brand-500/25 blur-[110px] will-change-transform"
         animate={{ x: [0, 60, 0], y: [0, 40, 0] }}
         transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute -right-32 top-1/3 h-[26rem] w-[26rem] rounded-full bg-glow-500/20 blur-[120px]"
+        className="absolute -right-32 top-1/3 h-[26rem] w-[26rem] rounded-full bg-glow-500/20 blur-[120px] will-change-transform"
         animate={{ x: [0, -50, 0], y: [0, -30, 0] }}
         transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute -bottom-40 left-1/3 h-[30rem] w-[30rem] rounded-full bg-berry-500/15 blur-[130px]"
+        className="absolute -bottom-40 left-1/3 h-[30rem] w-[30rem] rounded-full bg-berry-500/15 blur-[130px] will-change-transform"
         animate={{ x: [0, 40, 0], y: [0, -40, 0] }}
         transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
       />
@@ -58,20 +58,39 @@ export default function App() {
   const phaseRef = useRef(phase)
   phaseRef.current = phase
 
+  // Display smoothing: raw frames feed the score, smoothed values feed the meter.
+  const smoothedCentsRef = useRef(null)
+  const lastDisplayRef = useRef({ cents: null, noteName: null, active: false, at: 0 })
+
   const handleSample = useCallback((sample) => {
     if (phaseRef.current !== PHASE.SINGING) return
+    // Raw frame — scoring must stay untouched by smoothing.
     samplesRef.current.push(sample)
 
     const target = targetRef.current
+    const now = performance.now()
+    const last = lastDisplayRef.current
+
     if (sample.pitch != null && target != null) {
-      setLive({
-        ...sample,
-        cents: centsBetween(sample.pitch, target),
+      const rawCents = centsBetween(sample.pitch, target)
+      const prev = smoothedCentsRef.current
+      // Exponential moving average kills frame-to-frame jitter.
+      smoothedCentsRef.current =
+        prev == null ? rawCents : prev + GAME.METER_SMOOTHING_ALPHA * (rawCents - prev)
+      lastDisplayRef.current = {
+        cents: smoothedCentsRef.current,
         noteName: midiToNoteName(closestMidi(sample.pitch)),
-      })
+        active: sample.clarity >= GAME.SCORING.MIN_CLARITY && sample.rms >= GAME.SCORING.MIN_RMS,
+        at: now,
+      }
+    } else if (now - last.at < GAME.METER_HOLD_MS) {
+      // Brief dropout — keep showing the last reading instead of flickering.
     } else {
-      setLive({ ...sample, cents: null, noteName: null })
+      smoothedCentsRef.current = null
+      lastDisplayRef.current = { cents: null, noteName: null, active: false, at: now }
     }
+
+    setLive({ ...lastDisplayRef.current })
   }, [])
 
   const { start: startDetection, stop: stopDetection, error: micError } = usePitchDetection(handleSample)
@@ -88,6 +107,8 @@ export default function App() {
     const midi = pickTarget(targetRef.current)
     targetRef.current = midi
     samplesRef.current = []
+    smoothedCentsRef.current = null
+    lastDisplayRef.current = { cents: null, noteName: null, active: false, at: 0 }
     setLive(null)
     setResult(null)
     setTargetMidi(midi)
@@ -95,9 +116,16 @@ export default function App() {
     setPhase(PHASE.REVEAL)
   }, [pickTarget])
 
+  const startingRef = useRef(false)
   const handleStart = useCallback(async () => {
-    const ok = await startDetection()
-    if (ok) startRound()
+    if (startingRef.current) return
+    startingRef.current = true
+    try {
+      const ok = await startDetection()
+      if (ok) startRound()
+    } finally {
+      startingRef.current = false
+    }
   }, [startDetection, startRound])
 
   const handleCountdownDone = useCallback(() => {
@@ -113,11 +141,17 @@ export default function App() {
   }, [stopDetection, synth])
 
   const handlePlayAgain = useCallback(async () => {
-    const ok = await startDetection()
-    if (ok) {
-      startRound()
-    } else {
-      setPhase(PHASE.IDLE)
+    if (startingRef.current) return
+    startingRef.current = true
+    try {
+      const ok = await startDetection()
+      if (ok) {
+        startRound()
+      } else {
+        setPhase(PHASE.IDLE)
+      }
+    } finally {
+      startingRef.current = false
     }
   }, [startDetection, startRound])
 
@@ -131,27 +165,34 @@ export default function App() {
   )
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden">
-      <BackgroundFX />
-      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col items-center justify-center px-4 py-10">
-        <AnimatePresence mode="wait">
-          {phase === PHASE.IDLE && (
-            <StartScreen key={`idle-${round}`} micError={micError} onStart={handleStart} />
-          )}
-          {phase === PHASE.REVEAL && (
-            <NoteReveal key={`reveal-${round}`} midi={targetMidi} synth={synth} onReady={() => setPhase(PHASE.COUNTDOWN)} />
-          )}
-          {phase === PHASE.COUNTDOWN && (
-            <CountdownOverlay key={`countdown-${round}`} synth={synth} onDone={handleCountdownDone} />
-          )}
-          {phase === PHASE.SINGING && (
-            <SingPhase key={`singing-${round}`} midi={targetMidi} live={live} onDone={handleSingingDone} />
-          )}
-          {phase === PHASE.RESULTS && (
-            <ResultsScreen key={`results-${round}`} midi={targetMidi} result={result} onPlayAgain={handlePlayAgain} />
-          )}
-        </AnimatePresence>
-      </main>
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div className="relative min-h-screen overflow-x-hidden">
+        <BackgroundFX />
+        <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-4xl flex-col items-center justify-center px-4 py-10 sm:px-6">
+          <AnimatePresence mode="wait">
+            {phase === PHASE.IDLE && (
+              <StartScreen key={`idle-${round}`} micError={micError} onStart={handleStart} />
+            )}
+            {phase === PHASE.REVEAL && (
+              <NoteReveal
+                key={`reveal-${round}`}
+                midi={targetMidi}
+                synth={synth}
+                onReady={() => setPhase(PHASE.COUNTDOWN)}
+              />
+            )}
+            {phase === PHASE.COUNTDOWN && (
+              <CountdownOverlay key={`countdown-${round}`} synth={synth} onDone={handleCountdownDone} />
+            )}
+            {phase === PHASE.SINGING && (
+              <SingPhase key={`singing-${round}`} midi={targetMidi} live={live} onDone={handleSingingDone} />
+            )}
+            {phase === PHASE.RESULTS && (
+              <ResultsScreen key={`results-${round}`} midi={targetMidi} result={result} onPlayAgain={handlePlayAgain} />
+            )}
+          </AnimatePresence>
+        </main>
+      </div>
+    </MotionConfig>
   )
 }

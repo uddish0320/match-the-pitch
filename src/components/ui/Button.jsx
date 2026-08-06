@@ -19,10 +19,11 @@ const SIZES = {
 export default function Button({ variant = 'primary', size = 'md', className = '', children, ...props }) {
   return (
     <motion.button
+      type="button"
       whileTap={{ scale: 0.95 }}
       whileHover={{ scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl font-semibold tracking-wide transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:pointer-events-none disabled:opacity-50 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl font-semibold tracking-wide transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:pointer-events-none disabled:opacity-50 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       {...props}
     >
       {children}
