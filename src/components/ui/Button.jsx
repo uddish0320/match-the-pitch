@@ -2,8 +2,8 @@ import { motion } from 'framer-motion'
 
 const VARIANTS = {
   primary:
-    'bg-gradient-to-r from-brand-500 to-berry-500 text-white shadow-lg shadow-brand-500/30 hover:from-brand-400 hover:to-berry-400',
-  ghost: 'bg-white/5 text-slate-200 border border-white/10 hover:bg-white/10',
+    'bg-gradient-to-r from-brand-500 via-brand-400 to-glow-500 text-white shadow-lg shadow-brand-500/30 hover:from-brand-400 hover:via-brand-300 hover:to-glow-400',
+  ghost: 'bg-white/[0.06] text-slate-200 border border-white/10 hover:bg-white/[0.10] backdrop-blur-xl',
   dark: 'bg-ink-800 text-slate-100 border border-white/10 hover:bg-ink-700',
 }
 
@@ -21,9 +21,9 @@ export default function Button({ variant = 'primary', size = 'md', className = '
     <motion.button
       type="button"
       whileTap={{ scale: 0.95 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl font-semibold tracking-wide transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:pointer-events-none disabled:opacity-50 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      whileHover={{ scale: 1.03 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl font-semibold tracking-wide transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950 disabled:pointer-events-none disabled:opacity-50 ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       {...props}
     >
       {children}

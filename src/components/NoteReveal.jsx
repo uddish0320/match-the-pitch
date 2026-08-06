@@ -43,7 +43,7 @@ export default function NoteReveal({ midi, synth, onReady }) {
 
   return (
     <Screen>
-      <Card className="flex w-full max-w-xl flex-col items-center p-8 text-center sm:p-10">
+      <Card className="flex w-full max-w-xl flex-col items-center p-8 text-center sm:p-12">
         <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">
           <span aria-hidden>🎵</span> Target note
         </p>
@@ -51,10 +51,10 @@ export default function NoteReveal({ midi, synth, onReady }) {
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.1 }}
-          className="mt-3"
+          transition={{ type: 'spring', stiffness: 200, damping: 14, delay: 0.1 }}
+          className="mt-4"
         >
-          <div className="bg-gradient-to-r from-brand-300 via-berry-400 to-glow-300 bg-clip-text font-display text-8xl font-black text-transparent drop-shadow-[0_0_30px_rgba(139,92,246,0.45)] sm:text-9xl">
+          <div className="bg-gradient-to-r from-brand-300 via-berry-400 to-glow-300 bg-clip-text font-display text-9xl font-black text-transparent drop-shadow-[0_0_40px_rgba(139,92,246,0.45)] sm:text-[10rem]">
             {name}
           </div>
         </motion.div>
@@ -62,17 +62,17 @@ export default function NoteReveal({ midi, synth, onReady }) {
         <motion.div
           initial={{ y: 14, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          className="mt-4 w-full"
+          transition={{ delay: 0.25, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-5 w-full"
         >
-          <StaffNote midi={midi} color="#c4b5fd" className="mx-auto [&_svg]:max-w-[240px] sm:[&_svg]:max-w-[280px]" />
+          <StaffNote midi={midi} color="#c4b5fd" className="mx-auto [&_svg]:max-w-[260px] sm:[&_svg]:max-w-[300px]" />
         </motion.div>
 
         <motion.div
           initial={{ y: 14, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mt-6 flex w-full flex-col items-center justify-center gap-3 sm:flex-row"
+          transition={{ delay: 0.4, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-8 flex w-full flex-col items-center justify-center gap-3 sm:flex-row"
         >
           <Button variant="ghost" onClick={replay} className="w-full sm:w-auto">
             <span aria-hidden>🔊</span> Play note <span className="text-xs text-slate-500">(R)</span>
@@ -85,8 +85,8 @@ export default function NoteReveal({ midi, synth, onReady }) {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="animate-pulse-soft mt-5 text-sm text-slate-400"
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="animate-pulse-soft mt-6 text-sm text-slate-400"
         >
           When the countdown ends, sing {name} into the microphone.
         </motion.p>

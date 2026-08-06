@@ -27,23 +27,38 @@ function SingPhase({ midi, live, onDone }) {
 
   return (
     <Screen>
-      <div className="flex w-full max-w-3xl flex-col items-center gap-8 lg:gap-10">
+      <div className="flex w-full max-w-3xl flex-col items-center gap-8 lg:gap-12">
         {/* Target pill */}
         <motion.div
           initial={{ y: -12, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="flex items-center gap-3 rounded-full border border-brand-500/30 bg-brand-500/10 px-5 py-2 backdrop-blur"
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center gap-3 rounded-full border border-brand-500/30 bg-brand-500/10 px-6 py-2.5 backdrop-blur-xl"
         >
           <span
-            className="h-2 w-2 rounded-full bg-brand-400 shadow-[0_0_10px_2px_rgba(167,139,250,0.8)]"
+            className="h-2.5 w-2.5 rounded-full bg-brand-400 shadow-[0_0_12px_3px_rgba(167,139,250,0.8)]"
             aria-hidden
           />
           <span className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">Match</span>
-          <span className="font-display text-3xl font-black leading-none text-brand-300">{targetName}</span>
+          <span className="font-display text-4xl font-black leading-none text-brand-300">{targetName}</span>
+        </motion.div>
+
+        {/* Microphone status indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="flex items-center gap-2.5 rounded-full border border-glow-500/30 bg-glow-500/10 px-4 py-2 backdrop-blur"
+        >
+          <span className="relative flex h-3 w-3">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-glow-400 opacity-60" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-glow-400" />
+          </span>
+          <span className="text-xs font-medium text-glow-300">Microphone active</span>
         </motion.div>
 
         {/* Live detected note */}
-        <div className="flex min-h-[9.5rem] flex-col items-center justify-center">
+        <div className="flex min-h-[10.5rem] flex-col items-center justify-center">
           <AnimatedNote name={live?.noteName ?? null} active={live?.active ?? false} />
         </div>
 
@@ -56,7 +71,7 @@ function SingPhase({ midi, live, onDone }) {
             <span className="animate-pulse-soft text-good-300">Sing!</span>
             <span className="tabular-nums">{remainingSec}s</span>
           </div>
-          <div className="h-3.5 w-full overflow-hidden rounded-full bg-white/10 ring-1 ring-white/10">
+          <div className="h-3.5 w-full overflow-hidden rounded-full bg-white/[0.08] ring-1 ring-white/[0.08]">
             <motion.div
               className="h-full rounded-full bg-gradient-to-r from-good-400 via-glow-400 to-glow-500"
               initial={{ width: '100%' }}
@@ -76,8 +91,8 @@ const AnimatedNote = memo(function AnimatedNote({ name, active }) {
       <div className="flex flex-col items-center">
         <div className="flex h-28 items-center justify-center">
           <motion.div
-            animate={{ opacity: [0.35, 0.75, 0.35] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             className="font-display text-7xl font-black leading-none text-slate-600"
           >
             —
@@ -101,10 +116,10 @@ const AnimatedNote = memo(function AnimatedNote({ name, active }) {
           initial={{ scale: 0.5, opacity: 0, y: 16 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.6, opacity: 0, y: -16 }}
-          transition={{ type: 'spring', stiffness: 340, damping: 22 }}
-          className={`font-display text-8xl font-black leading-none tracking-tight lg:text-9xl ${
+          transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+          className={`font-display text-9xl font-black leading-none tracking-tight lg:text-[10rem] ${
             active
-              ? 'text-white drop-shadow-[0_0_45px_rgba(52,211,153,0.45)]'
+              ? 'text-white drop-shadow-[0_0_50px_rgba(52,211,153,0.45)]'
               : 'text-slate-500'
           }`}
         >
@@ -113,7 +128,7 @@ const AnimatedNote = memo(function AnimatedNote({ name, active }) {
       </AnimatePresence>
       <motion.p
         animate={{ opacity: active ? 1 : 0.65 }}
-        className={`mt-3 text-xs font-semibold uppercase tracking-[0.3em] ${
+        className={`mt-4 text-xs font-semibold uppercase tracking-[0.3em] ${
           active ? 'text-good-300' : 'text-slate-500'
         }`}
       >
