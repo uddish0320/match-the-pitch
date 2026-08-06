@@ -14,10 +14,10 @@ export const GAME = {
   REVEAL_NOTE_DURATION_MS: 2200,
 
   /** Seconds shown on the pre-singing countdown. */
-  COUNTDOWN_SECONDS: 3,
+  COUNTDOWN_SECONDS: 5,
 
-  /** Length of the "sing now" window in ms (≈10 s → ~20 s total round). */
-  SING_DURATION_MS: 10000,
+  /** Length of the "sing now" window in ms (≈30 s → ~50 s total round). */
+  SING_DURATION_MS: 30000,
 
   /** Scoring model. */
   SCORING: {
