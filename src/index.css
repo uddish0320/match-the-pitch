@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-display: "Avenir Next", "Segoe UI", ui-rounded, ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink-950: #070b14;
+  --color-ink-900: #0b1222;
+  --color-ink-800: #121a30;
+  --color-ink-700: #1b2542;
+
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+
+  --color-glow-300: #67e8f9;
+  --color-glow-400: #22d3ee;
+  --color-glow-500: #06b6d4;
+
+  --color-berry-400: #f472b6;
+  --color-berry-500: #ec4899;
+
+  --color-good-300: #6ee7b7;
+  --color-good-400: #34d399;
+  --color-good-500: #10b981;
+
+  --color-warn-400: #fbbf24;
+
+  --color-bad-400: #f87171;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-ink-950 font-sans text-slate-100 antialiased;
+  overscroll-behavior: none;
+}
+
+::selection {
+  background: rgb(139 92 246 / 0.45);
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.6s ease-in-out infinite;
+}
